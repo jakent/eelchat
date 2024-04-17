@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Deps: cider/cider-nrepl:0.45.0">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/cider/cider-nrepl/0.45.0/cider-nrepl-0.45.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

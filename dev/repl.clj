@@ -72,7 +72,7 @@
 
   ;; Update an existing user's email address
   (let [{:keys [biff/db] :as ctx} (get-context)
-        user-id (biff/lookup-id db :user/email "hello@example.com")]
+        user-id (biff/lookup-id db :user/email "james.atherton.kent@gmail.com")]
     (biff/submit-tx ctx
       [{:db/doc-type :user
         :xt/id user-id
