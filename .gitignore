@@ -15,3 +15,9 @@
 .portal/
 .shadow-cljs/
 .envrc
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr

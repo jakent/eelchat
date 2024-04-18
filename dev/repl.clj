@@ -2,7 +2,8 @@
   (:require [com.eelchat :as main]
             [com.biffweb :as biff :refer [q]]
             [clojure.edn :as edn]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [xtdb.api :as xt]))
 
 ;; REPL-driven development
 ;; ----------------------------------------------------------------------------------------
@@ -66,7 +67,6 @@
                        :message/created-at :db/now
                        :message/text (str "Seed message " (rand-int 1000))}))))
 
-
 (comment
   ;; Call this function if you make a change to main/initial-system,
   ;; main/components, :tasks, :queues, config.env, or deps.edn.
@@ -83,6 +83,18 @@
     (q db
        '{:find (pull user [*])
          :where [[user :user/email]]}))
+
+
+  (xt/pull (:biff/db (get-context))
+           '[:xt/id
+             :user/email
+             {:membership/_user [*
+                                 {:membership/community [:community/title
+                                                         {:channel/_community [:channel/title
+                                                                               {:subscription/_channel [:subscription/url]}
+                                                                               {:message/_channel [:message/text]}]}]}
+                                 #_{:message/_membership [:message/text]}]}]
+           #uuid"438d66bf-60fc-4e4c-ab38-290c1f5034ff")
 
   ;; Update an existing user's email address
   (let [{:keys [biff/db] :as ctx} (get-context)

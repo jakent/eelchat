@@ -8,6 +8,7 @@
             [com.eelchat.home :as home]
             [com.eelchat.middleware :as mid]
             [com.eelchat.schema :as schema]
+            [com.eelchat.subscriptions :as sub]
             [com.eelchat.ui :as ui]
             [malli.core :as malc]
             [malli.registry :as malr]
@@ -18,6 +19,7 @@
   [app/module
    (biff/authentication-module {})
    home/module
+   sub/module
    schema/module])
 
 (def routes [["" {:middleware [mid/wrap-site-defaults]}
