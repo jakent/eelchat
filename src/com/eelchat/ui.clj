@@ -2,8 +2,9 @@
   (:require [cheshire.core :as cheshire]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [com.eelchat.settings :as settings]
             [com.biffweb :as biff]
+            [com.eelchat.settings :as settings]
+            [com.eelchat.ui.icons :refer [icon]]
             [ring.middleware.anti-forgery :as csrf]
             [ring.util.response :as ring-response]
             [rum.core :as rum]))
@@ -51,10 +52,22 @@
                                     head))))
    body))
 
-(defn app-page [{:keys [uri user] :as ctx} & body]
+(defn channels [{:keys [biff/db community roles]}]
+  (when (some? roles)
+    (sort-by
+      :channel/title
+      (biff/q db
+         '{:find (pull channel [*])
+           :in [community]
+           :where [[channel :channel/community community]]}
+         (:xt/id community)))))
+
+(defn app-page [{:keys [uri user community roles channel] :as ctx} & body]
   (base
     ctx
     [:.flex.bg-orange-50
+     {:hx-headers (cheshire/generate-string
+                    {:x-csrf-token csrf/*anti-forgery-token*})}
      [:.h-screen.w-80.p-3.pr-0.flex.flex-col.flex-grow
       [:select
        {:class '[text-sm
@@ -70,7 +83,32 @@
           {:value url
            :selected (str/starts-with? uri url)}
           (:community/title community)])]
+      [:.h-4]
+      (for [c (channels ctx)
+            :let [active (= (:xt/id c) (:xt/id channel))
+                  href (str "/community/" (:xt/id community)
+                            "/channel/" (:xt/id c))]]
+        [:.mt-4.flex.justify-between.leading-none
+         (if active
+           [:span.font-bold (:channel/title c)]
+           [:a.link {:href href}
+            (:channel/title c)])
+         (when (contains? roles :admin)
+           [:button.opacity-50.hover:opacity-100.flex.items-center
+            {:hx-delete href
+             :hx-confirm (str "Delete " (:channel/title c) "?")
+             :hx-target "closest div"
+             :hx-swap "outerHTML"
+             :_ (when active
+                  (str "on htmx:afterRequest set window.location to '/community/" (:xt/id community) "'"))}
+            (icon :x {:class "w-3 h-3"})])])
       [:.grow]
+      (when (contains? roles :admin)
+        [:<>
+         (biff/form
+           {:action (str "/community/" (:xt/id community) "/channel")}
+           [:button.btn.w-full {:type "submit"} "New channel"])
+         [:.h-3]])
       (biff/form
         {:action "/community"}
         [:button.btn.w-full {:type "submit"} "New community"])
